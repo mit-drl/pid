@@ -79,7 +79,10 @@ double tan_filt = 1.;
 
 // Upper and lower saturation limits
 double upper_limit =  1000.;
-double lower_limit = -1000.; 
+double lower_limit = -1000.;
+double max_plant_state = 500;
+double borderline_upper_limit =  100.;
+double borderline_lower_limit = -100.; 
 double windup_limit = 1000.; // Anti-windup term. Limits the absolute value of the integral term.
 
 std::vector<double> error(3);

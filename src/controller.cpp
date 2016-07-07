@@ -147,6 +147,28 @@ void plant_state_callback(const std_msgs::Float64& state_msg)
     diag_status.message = "PID controller nominal";
   }
 
+  // Apply saturation limits for borderline case
+  if (max_plant_state != 0 && fabsf(plant_state) > max_plant_state)
+  {
+    if (control_effort > borderline_upper_limit)
+    {
+      control_effort = borderline_upper_limit;
+      diag_status.level = diagnostic_msgs::DiagnosticStatus::WARN;
+      diag_status.message = "Control effort exceeded upper limit (borderline case)";
+    }
+    else if (control_effort < borderline_lower_limit)
+    {
+      control_effort = borderline_lower_limit;
+      diag_status.level = diagnostic_msgs::DiagnosticStatus::WARN;
+      diag_status.message = "Control effort exceeded lower limit (borderline case)";
+    }
+    else
+    {
+      diag_status.level = diagnostic_msgs::DiagnosticStatus::OK;
+      diag_status.message = "PID controller nominal";
+    }
+  }
+
   // Publish the stabilizing control effort if the controller is enabled
   if (pid_enabled)
   {
@@ -264,6 +286,9 @@ int main(int argc, char **argv)
   node_priv.param<double>("Kd", Kd, 0.0);
   node_priv.param<double>("upper_limit", upper_limit, 1000.0);
   node_priv.param<double>("lower_limit", lower_limit, -1000.0);
+  node_priv.param<double>("borderline_upper_limit", borderline_upper_limit, 100.0);
+  node_priv.param<double>("borderline_lower_limit", borderline_lower_limit, -100.0);
+  node_priv.param<double>("max_plant_state", max_plant_state, 500.0);
   node_priv.param<double>("windup_limit", windup_limit, 1000.0);
   node_priv.param<double>("cutoff_frequency", cutoff_frequency, -1.0);
   node_priv.param<std::string>("topic_from_controller", topic_from_controller, "control_effort");
